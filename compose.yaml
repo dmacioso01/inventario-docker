@@ -1,0 +1,40 @@
+
+services:
+  web:
+    build: .
+    container_name: inventario_web
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: mysql+pymysql://inventario:inventario123@db:3306/inventario
+      SECRET_KEY: inventario-clave-secreta
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - inventario_red
+
+  db:
+    image: mysql:8.4
+    container_name: inventario_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: inventario
+      MYSQL_USER: inventario
+      MYSQL_PASSWORD: inventario123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - inventario_red
+
+volumes:
+  mysql_data:
+
+networks:
+  inventario_red:
+    driver: bridge

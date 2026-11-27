@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Docker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Inventario Docker</h1>
+        <p>Sistema de gestión y control de productos</p>
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Registrar producto</h2>
+
+            <form action="{{ url_for('registrar') }}" method="POST">
+                <input type="text" name="nombre" placeholder="Nombre del producto" required>
+                <input type="text" name="categoria" placeholder="Categoría" required>
+                <input type="number" name="cantidad" placeholder="Cantidad" min="0" required>
+                <input type="number" name="precio" placeholder="Precio" min="0" step="0.01" required>
+                <button type="submit">Registrar producto</button>
+            </form>
+        </section>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje {{ categoria }}">{{ mensaje }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="panel">
+            <h2>Productos registrados</h2>
+
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.id }}</td>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.categoria }}</td>
+                            <td>{{ producto.cantidad }}</td>
+                            <td>${{ "%.2f"|format(producto.precio) }}</td>
+                            <td>
+                                <details>
+                                    <summary>Editar</summary>
+                                    <form action="{{ url_for('editar', id=producto.id) }}" method="POST">
+                                        <input name="nombre" value="{{ producto.nombre }}" required>
+                                        <input name="categoria" value="{{ producto.categoria }}" required>
+                                        <input type="number" name="cantidad" value="{{ producto.cantidad }}" min="0" required>
+                                        <input type="number" name="precio" value="{{ producto.precio }}" min="0" step="0.01" required>
+                                        <button type="submit">Guardar cambios</button>
+                                    </form>
+                                </details>
+
+                                <form action="{{ url_for('eliminar', id=producto.id) }}" method="POST"
+                                      onsubmit="return confirm('¿Deseas eliminar este producto?');">
+                                    <button class="eliminar" type="submit">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">Todavía no hay productos registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>Proyecto académico - Sistemas Operativos 2026-II</footer>
+</body>
+</html>
